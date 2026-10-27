@@ -1,0 +1,512 @@
+[
+  {
+    "site_id": "3529",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "4000",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "4034",
+    "sub_region": "C-1",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "4060",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "4061",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "4184",
+    "sub_region": "C-6",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "4305",
+    "sub_region": "C-1",
+    "revenue": "Silver",
+    "group": "SB"
+  },
+  {
+    "site_id": "4354",
+    "sub_region": "C-6",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "4546",
+    "sub_region": "C-1",
+    "revenue": "Silver",
+    "group": "SB"
+  },
+  {
+    "site_id": "4624",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "4907",
+    "sub_region": "C-6",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "4910",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "4911",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7492",
+    "sub_region": "C-1",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "4963",
+    "sub_region": "C-6",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "4964",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "4966",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "5022",
+    "sub_region": "C-1",
+    "revenue": "Strategic",
+    "group": "PGS"
+  },
+  {
+    "site_id": "5240",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "5246",
+    "sub_region": "C-6",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "5434",
+    "sub_region": "C-1",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "5436",
+    "sub_region": "C-1",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "7885",
+    "sub_region": "C-1",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "5495",
+    "sub_region": "C-1",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "5503",
+    "sub_region": "C-1",
+    "revenue": "Silver",
+    "group": "SB"
+  },
+  {
+    "site_id": "5516",
+    "sub_region": "C-1",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "5526",
+    "sub_region": "C-1",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "5527",
+    "sub_region": "C-1",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "5572",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "5573",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "5576",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "5578",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "6370",
+    "sub_region": "C-1",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7290",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7292",
+    "sub_region": "C-6",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "7293",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7294",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7295",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7300",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7301",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7302",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7308",
+    "sub_region": "C-1",
+    "revenue": "Silver",
+    "group": "SB"
+  },
+  {
+    "site_id": "7309",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7313",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7415",
+    "sub_region": "C-1",
+    "revenue": "Strategic",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7422",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7569",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "7787",
+    "sub_region": "C-1",
+    "revenue": "Silver",
+    "group": "SB"
+  },
+  {
+    "site_id": "7949",
+    "sub_region": "C-1",
+    "revenue": "Silver",
+    "group": "SB"
+  },
+  {
+    "site_id": "40126",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "40713",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "40714",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "40715",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "40716",
+    "sub_region": "C-6",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "40717",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "40718",
+    "sub_region": "C-6",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "40729",
+    "sub_region": "C-6",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "40749",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "41409",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "42371",
+    "sub_region": "C-6",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "42445",
+    "sub_region": "C-1",
+    "revenue": "Silver",
+    "group": "SB"
+  },
+  {
+    "site_id": "42682",
+    "sub_region": "C-1",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "42567",
+    "sub_region": "C-6",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "42637",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "42658",
+    "sub_region": "C-6",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "42663",
+    "sub_region": "C-6",
+    "revenue": "Silver",
+    "group": "SB"
+  },
+  {
+    "site_id": "42690",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "42718",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "42719",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "42908",
+    "sub_region": "C-6",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "42941",
+    "sub_region": "C-6",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "42942",
+    "sub_region": "C-6",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "43010",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "43156",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "43525",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "43527",
+    "sub_region": "C-6",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "4938",
+    "sub_region": "C-1",
+    "revenue": "Platinum +",
+    "group": "Platinum+"
+  },
+  {
+    "site_id": "44431",
+    "sub_region": "C-1",
+    "revenue": "Silver",
+    "group": "SB"
+  },
+  {
+    "site_id": "44517",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "44567",
+    "sub_region": "C-6",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "44574",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "44575",
+    "sub_region": "C-6",
+    "revenue": "Gold",
+    "group": "PGS"
+  },
+  {
+    "site_id": "44580",
+    "sub_region": "C-6",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "44587",
+    "sub_region": "C-1",
+    "revenue": "Platinum",
+    "group": "PGS"
+  },
+  {
+    "site_id": "44635",
+    "sub_region": "C-6",
+    "revenue": "Gold",
+    "group": "PGS"
+  }
+]
