@@ -1,0 +1,15 @@
+{
+  "reporting_period": "June\u2013August 2026",
+  "total_sites": 1183,
+  "normal_sites": 515,
+  "high_bill_unique": 668,
+  "c1_high_bill": 424,
+  "c6_high_bill": 244,
+  "primary_actions": {
+    "criteria": 193,
+    "suspected": 190,
+    "excess": 130,
+    "theft": 51,
+    "meter": 104
+  }
+}

@@ -1,7 +1,7 @@
+import highBillActions from './MeterGuardHighBillingActions2026.json';
 import tddSites from './MeterGuardTDD2026.json';
 import MeterGuardFieldInvestigations from './MeterGuardFieldInvestigations';
 import hqHistoryFallback from './MeterGuardHQHistory2026.json';
-import centralBillingHistory from './MeterGuardCentralBilling2026.json';
 /// <reference types="vite/client" />
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
@@ -23,10 +23,12 @@ const excess = (r: R, m: string) => { const a = unit(r, m), b = baseline(r, m); 
 const growth = (r: R, m: string) => { const a = excess(r, m), b = baseline(r, m); return a === null || b === null || b === 0 ? null : 100 * a / b; };
 const hasPair = (r: R, m: string) => baseline(r, m) !== null && unit(r, m) !== null;
 const isHigh = (r: R, m: string) => String(r[`${m}_flag`] || '').toLowerCase() === 'high bill';
-const reasonOf = (r: R) => `${r.action_category || ''} ${r.final_reason || ''}`.toLowerCase();
+const actionMap=new Map((highBillActions as Array<{site_id:string;grid:string;months:string[];primary_reason:string}>).filter(x=>x.grid.startsWith('C6')&&x.months.some(m=>['2026-06','2026-07','2026-08'].includes(m))).map(x=>[x.site_id,x.primary_reason]));
+const actionReasonLabel:Record<string,string>={theft:'CP Theft',meter:'Faulty Meter',excess:'Excessive Units Charged',criteria:'Criteria Revision',suspected:'Suspected CP Theft'};
+const reasonOf = (r: R) => (actionReasonLabel[actionMap.get(r.site_id)||''] || `${r.action_category || ''} ${r.final_reason || ''}`).toLowerCase();
 const isCriteriaRevision=(r:R)=>/criteria revision|criterion revision|criteria revis/i.test(reasonOf(r));
 const tddIds=new Set((tddSites as Array<{site_id:string}>).map(x=>String(x.site_id).trim()));
-const reasonGroup = (r: R) => { const s = reasonOf(r); return s.includes('theft') ? 'CP Theft' : /faulty meter|meter faulty|meter fault/.test(s) ? 'Faulty Meter' : s.includes('rms') || s.includes('load') ? 'Load / RMS' : 'Other / Unverified'; };
+const reasonGroup = (r: R) => { const action=actionMap.get(r.site_id);if(action)return action==='theft'?'CP Theft':action==='meter'?'Faulty Meter':action==='criteria'?'Load / RMS':action==='excess'?'Excessive Units Charged':'Suspected CP Theft';const s=reasonOf(r);return s.includes('theft')?'CP Theft':/faulty meter|meter faulty|meter fault/.test(s)?'Faulty Meter':s.includes('rms')||s.includes('load')?'Load / RMS':'Other / Unverified'; };
 const tabs = ['Executive Overview', 'Consumption History', 'CP Theft', 'Faulty Meter', 'Criteria Revision', 'TDD Sites', 'RMS vs Billing', 'Field Investigations', 'HQ High Billing History'] as const;
 type Tab = typeof tabs[number];
 type HQ = { site_id:string; bill_month:string; grid:string|null; billed_units:number|null; bill_amount:number|null; final_criteria_kwh:number|null; excessive_units:number|null; variance_pct:number|null; site_category:string|null; };
@@ -95,6 +97,8 @@ function BubbleChart({ rows, month, onSelect }: { rows: R[]; month: string; onSe
 
 export default function MeterGuardBillingDashboard() {
   const [data, setData] = useState<R[]>([]);
+  const [liveBilling, setLiveBilling] = useState<Array<{site_id:string;grid:string|null;billed_month:string;total_units:number|null}>>([]);
+  const [billingError, setBillingError] = useState('');
   const [hqRows, setHqRows] = useState<HQ[]>(hqHistoryFallback as HQ[]);
   const [hqError, setHqError] = useState('');
   const [hqSite, setHqSite] = useState<string | null>(null);
@@ -108,6 +112,23 @@ export default function MeterGuardBillingDashboard() {
   const [metric, setMetric] = useState('All');
   const [month, setMonth] = useState('aug');
   const [provisional, setProvisional] = useState(false);
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const records: Array<{site_id:string;grid:string|null;billed_month:string;total_units:number|null}> = [];
+      for (let offset = 0; offset < 25000; offset += 1000) {
+        const {data: batch, error: e} = await db.from('cp_billing_history')
+          .select('site_id,grid,billed_month,total_units')
+          .order('site_id').order('billed_month').range(offset, offset + 999);
+        if (!active) return;
+        if (e) { setBillingError(e.message); return; }
+        records.push(...((batch || []) as typeof records));
+        if (!batch || batch.length < 1000) break;
+      }
+      if (active) {setLiveBilling(records);setBillingError('');}
+    })();
+    return () => { active = false; };
+  }, []);
   useEffect(() => { let alive = true; (async () => { const { data: result, error: e } = await db.from('mg_c6_billing').select('*').order('site_id').limit(5000); if (!alive) return; setData((result || []) as R[]); setError(e?.message || ''); setLoading(false); })(); return () => { alive = false; }; }, []);
   useEffect(() => { let alive = true; (async () => {
     const collected: HQ[] = [];
@@ -123,17 +144,25 @@ export default function MeterGuardBillingDashboard() {
   const siteHq = (site:string) => hqRows.filter(r=>/^C6\d{3}$/.test(String(r.grid||'')) && r.site_id===site).sort((a,b)=>a.bill_month.localeCompare(b.bill_month));
   const effectiveUnits = (r:R,m:string) => unit(r,m) ?? (hqRows.find(h=>h.site_id===r.site_id && h.bill_month.startsWith(`2026-${String(months.indexOf(m)+1).padStart(2,'0')}`))?.billed_units ?? null);
   const eligibleData = useMemo(() => {
-    // ABS monthly billing is the primary site universe. Supabase provides investigation metadata.
+    // cp_billing_history is the authoritative billing site universe. Supabase provides investigation metadata.
     const byId = new Map<string, R>();
-    for (const raw of centralBillingHistory as Array<Record<string, string | number | null>>) {
-      const site_id = String(raw.site_id || '').trim();
-      if (!site_id || ['C2006', 'C2009'].includes(String(raw.grid || '').trim().toUpperCase())) continue;
-      byId.set(site_id, {
-        site_id, grid: String(raw.grid || ''), revenue: '', owner: '', final_reason: '',
-        verification: '', hb_months: '', action_category: '', management_action: '',
-        field_remarks: '', hq_locked: '', rms_criteria: '', aug_vs_rms: '',
-        ...Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, v == null ? null : String(v)])),
-      } as R);
+    // Live Supabase history is authoritative. C-6 only; metadata is merged below.
+    for (const bill of liveBilling) {
+      const site_id = String(bill.site_id || '').trim();
+      const g = String(bill.grid || '').trim().toUpperCase();
+      if (!site_id || !/^C6\d{3}$/.test(g)) continue;
+      let item = byId.get(site_id);
+      if (!item) {
+        item = {site_id,grid:g,revenue:'',owner:'',final_reason:'',verification:'',hb_months:'',action_category:'',management_action:'',field_remarks:'',hq_locked:'',rms_criteria:'',aug_vs_rms:''} as R;
+        byId.set(site_id,item);
+      }
+      // Monthly columns represent calendar 2026; September–December 2025
+      // remain in cp_billing_history and are available to the Overview.
+      const date = String(bill.billed_month || '');
+      if (date.startsWith('2026-')) {
+        const index = Number(date.slice(5,7)) - 1;
+        if (index >= 0 && index < 12) item[`${months[index]}_units`] = bill.total_units == null ? null : String(bill.total_units);
+      }
     }
     for (const r of data) {
       const key = String(r.site_id || '').trim();
@@ -148,15 +177,13 @@ export default function MeterGuardBillingDashboard() {
           field_remarks: r.field_remarks || '', hq_locked: r.hq_locked || '',
           rms_criteria: r.rms_criteria || '', aug_vs_rms: r.aug_vs_rms || '',
         });
-      } else if (/^C[16]\d{3}$/.test(String(r.grid || '').trim().toUpperCase())) {
-        byId.set(key, r);
       }
     }
     return [...byId.values()].filter(r => /^C6\d{3}$/.test(String(r.grid || '').trim().toUpperCase()));
-  }, [data]);
+  }, [data, liveBilling]);
   const grids = useMemo(() => [...new Set(eligibleData.map(r => r.grid).filter((g): g is string => !!g))].sort(), [eligibleData]);
   const scope = useMemo(() => eligibleData.filter(r => grid === 'All' || r.grid === grid), [eligibleData, grid]);
-  const base = useMemo(() => scope.filter(r => tab === 'CP Theft' ? reasonGroup(r) === 'CP Theft' : tab === 'Faulty Meter' ? reasonGroup(r) === 'Faulty Meter' : tab === 'Criteria Revision' ? isCriteriaRevision(r) : tab === 'TDD Sites' ? tddIds.has(r.site_id) : true), [scope, tab]);
+  const base = useMemo(() => scope.filter(r => tab === 'CP Theft' ? actionMap.get(r.site_id) === 'theft' : tab === 'Faulty Meter' ? actionMap.get(r.site_id) === 'meter' : tab === 'Criteria Revision' ? actionMap.get(r.site_id) === 'criteria' : tab === 'TDD Sites' ? tddIds.has(r.site_id) : true), [scope, tab]);
   const coverage = useMemo(() => months.map(m => ({ m, n: eligibleData.filter(r => unit(r, m) !== null).length, comparable: eligibleData.filter(r => hasPair(r, m)).length })), [eligibleData]);
   const monthCoverage = coverage.find(x => x.m === month);
   const incomplete = monthCoverage ? monthCoverage.n < eligibleData.length : true;
