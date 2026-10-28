@@ -1,5 +1,5 @@
-MeterGuard Overview layout update (27 Oct 2026)
-
-Replace src/App.tsx with this App.tsx. Keep supporting JSON and TSX files in src.
-Removed Sub-region performance card and its split layout. Last 12 Months now spans full Overview width, with taller charts. Other dashboard functionality retained.
-Run npm run build before deployment.
+MeterGuard update — replace App.tsx, C6HQOverview.tsx, GridPerformance.tsx and add EmployeePerformance.tsx and SiteMasterTypes.ts in the same folder.
+Supabase mg_site_master must have authenticated SELECT access.
+Employee Performance follows Grid Performance. Rankings by average RMS-excess kWh per assessed site. C-6 scope.
+Overview/Grid site tables, drilldowns, exports include Cluster Owner, MS GTL, Zone Lead.
+Run npm run build. Note: full Vite build not executed in this isolated workspace.
