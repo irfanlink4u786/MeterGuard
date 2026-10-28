@@ -68,10 +68,15 @@ function analyze(readings:Reading[],site:Site):Interval[]{
 }
 
 
-function ExecutiveDashboard({sites,bills,onInspect}:{sites:Site[];readings:Reading[];bills:Bill[];onInspect:(id:string)=>void}){
- return <C6HQOverview sites={sites} bills={bills} onInspect={onInspect}/>;
-}
 
+function SiteVisibility({site,readings,openPhoto}:{site:Site;readings:Reading[];openPhoto:(path:string|null)=>void}){
+ const history=readings.filter(r=>r.site_id===site.id).sort((a,b)=>b.reading_at.localeCompare(a.reading_at)).slice(0,5);
+ return <section style={{padding:14,margin:'12px 0',border:'1px solid #d9e7de',borderRadius:12,background:'#f7fbf8'}}><strong>Site visit history · {site.site_code}</strong><p>Grid: {site.grid||'—'} · Cluster Owner: {site.cluster_owner||'—'} · Locked criterion: {site.monthly_limit==null?'Not set':nf(site.monthly_limit)+' kWh'}</p>{history.length?<table><thead><tr><th>Date</th><th>Peak</th><th>Off-peak</th><th>Total</th><th>Evidence</th></tr></thead><tbody>{history.map(r=><tr key={r.id}><td>{pstFormat(r.reading_at)}</td><td>{nf(r.peak,2)}</td><td>{nf(r.off_peak,2)}</td><td>{r.total_register==null?'—':nf(r.total_register,2)}</td><td><button type="button" onClick={()=>openPhoto(r.peak_photo_path||r.photo_path)}>Photo</button></td></tr>)}</tbody></table>:<p>No visits recorded yet.</p>}</section>;
+}
+function BillingHistoryDetail({site,bills,onClose}:{site:Site;bills:Bill[];onClose:()=>void}){
+ const history=bills.filter(b=>String(b.site_id)===site.site_code||String(b.site_id)===site.id).sort((a,b)=>String(a.billed_month).localeCompare(String(b.billed_month)));
+ return <div style={{background:'#fff',border:'1px solid #d9e7de',borderRadius:12,padding:16,margin:'14px 0'}}><div style={{display:'flex',justifyContent:'space-between'}}><strong>Billing history · {site.site_code}</strong><button type="button" onClick={onClose}>Close</button></div><div style={{overflowX:'auto'}}><table><thead><tr><th>Billing month</th><th>Units (kWh)</th><th>Grid</th></tr></thead><tbody>{history.map((b,i)=><tr key={i}><td>{b.billed_month}</td><td>{b.total_units==null?'—':nf(b.total_units)}</td><td>{b.grid||site.grid||'—'}</td></tr>)}{!history.length&&<tr><td colSpan={3}>No billing history available.</td></tr>}</tbody></table></div></div>;
+}
 export default function App(){
 
  const [masterSites,setMasterSites]=useState<MasterSite[]>([]);const [session,setSession]=useState<Session|null>(null);const [email,setEmail]=useState('Meter');const [password,setPassword]=useState('');const [authError,setAuthError]=useState('');const [sites,setSites]=useState<Site[]>([]);const [bills,setBills]=useState<Bill[]>([]);const [readings,setReadings]=useState<Reading[]>([]);const [selected,setSelected]=useState('');const [billingSiteId,setBillingSiteId]=useState('');const [search,setSearch]=useState('');const [tab,setTab]=useState<'overview'|'visits'|'sites'|'billing'|'employees'>('overview');const [modal,setModal]=useState(false);const [showMechanism,setShowMechanism]=useState(false);const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');const [mobileMenu,setMobileMenu]=useState(false);
@@ -139,7 +144,7 @@ export default function App(){
 
  }
 
- async function openPhoto(path:string){if(!supabase)return;const {data,error}=await supabase.storage.from('meter-evidence').createSignedUrl(path,90);if(error)setMessage(error.message);else if(data?.signedUrl)window.open(data.signedUrl,'_blank','noopener,noreferrer')}
+ async function openPhoto(path:string|null){if(!supabase || !path)return;const {data,error}=await supabase.storage.from('meter-evidence').createSignedUrl(path,90);if(error)setMessage(error.message);else if(data?.signedUrl)window.open(data.signedUrl,'_blank','noopener,noreferrer')}
 
   const overviewSiteByCode=new Map<string,Site>();
  for(const site of sites){if(!['C2006','C2009'].includes(String(site.grid||'').trim().toUpperCase()))overviewSiteByCode.set(site.site_code,site)}

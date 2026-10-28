@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY);
+const env = (import.meta as ImportMeta & { env: Record<string, string | undefined> }).env;
+const supabaseUrl = env.VITE_SUPABASE_URL;
+const supabaseKey = env.VITE_SUPABASE_PUBLISHABLE_KEY || env.VITE_SUPABASE_ANON_KEY;
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables. Check VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY (or VITE_SUPABASE_ANON_KEY).');
+}
+const supabase = createClient(supabaseUrl, supabaseKey);
 const panel: React.CSSProperties = { background: '#fff', border: '1px solid #dcebe6', borderRadius: 12, padding: 18, marginBottom: 14 };
 const field: React.CSSProperties = { width: '100%', padding: 9, borderRadius: 7, border: '1px solid #bdd6c9', boxSizing: 'border-box' };
 const action: React.CSSProperties = { background: '#116d4e', color: '#fff', padding: '10px 15px', border: 0, borderRadius: 8, cursor: 'pointer' };
