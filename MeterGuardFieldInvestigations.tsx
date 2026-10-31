@@ -17,10 +17,10 @@ const evidenceNames: Record<string, string[]> = {
   meter_fault: ['meter_total', 'meter_peak', 'meter_offpeak', 'meter_test'],
 };
 type Visit = { id: string; site_id: string; visited_at: string; total_kwh: number; hourly_kwh: number | null; expected_kwh_hour: number | null; deviation_pct: number | null; grid: string | null };
-const number = (v: string) => v.trim() === '' ? null : Number(v);
+const number = (v: string) => { if (v.trim() === '') return null; const n = Number(v); return Number.isFinite(n) ? n : null; };
 const pretty = (v: number | null | undefined) => v == null || !Number.isFinite(v) ? '—' : v.toFixed(2);
 
-export default function MeterGuardFieldInvestigations({ initialSite = '', initialGrid = '', lockedMonthlyUnits = null }: { initialSite?: string; initialGrid?: string; lockedMonthlyUnits?: number | null }) {
+export default function MeterGuardFieldInvestigations({ initialSite = '', initialGrid = '', lockedMonthlyUnits = null, onSaved }: { initialSite?: string; initialGrid?: string; lockedMonthlyUnits?: number | null; onSaved?: (siteId: string, kind: 'visit' | 'case') => void }) {
   const [site, setSite] = useState(initialSite);
   const [grid, setGrid] = useState(initialGrid);
   const [visits, setVisits] = useState<Visit[]>([]);
@@ -30,6 +30,7 @@ export default function MeterGuardFieldInvestigations({ initialSite = '', initia
   const [files, setFiles] = useState<Record<string, File | undefined>>({});
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [messageError, setMessageError] = useState(false);
   const [cases, setCases] = useState<{ id: string; case_type: string; status: string; created_at: string }[]>([]);
   const [visitRefresh, setVisitRefresh] = useState(0);
   useEffect(() => { setSite(initialSite); setGrid(initialGrid); }, [initialSite, initialGrid]);
@@ -42,7 +43,7 @@ export default function MeterGuardFieldInvestigations({ initialSite = '', initia
         supabase.from('mg_field_visits').select('id,site_id,grid,visited_at,total_kwh,hourly_kwh,expected_kwh_hour,deviation_pct').eq('site_id', site.trim()).order('visited_at', { ascending: false }).limit(50),
         supabase.from('mg_investigation_cases').select('id,case_type,status,created_at').eq('site_id', site.trim()).order('created_at', { ascending: false }).limit(30),
       ]);
-      if (live) { setVisits((a.data || []) as Visit[]); setCases(b.data || []); if (a.error || b.error) setMessage(a.error?.message || b.error?.message || ''); }
+      if (live) { setVisits((a.data || []) as Visit[]); setCases(b.data || []); if (a.error || b.error) { setMessageError(true); setMessage(`Unable to refresh saved records: ${a.error?.message || b.error?.message}`); } }
     })();
     return () => { live = false; };
   }, [site, visitRefresh]);
@@ -72,19 +73,21 @@ export default function MeterGuardFieldInvestigations({ initialSite = '', initia
     return paths;
   }
   async function saveVisit() {
-    setMessage(''); setBusy(true);
+    setMessage(''); setMessageError(false); setBusy(true);
     try {
       const uid = await userId(), total = number(current.total), peak = number(current.peak), offpeak = number(current.offpeak);
       if (!site.trim() || !grid.trim() || !current.at || total == null || total < 0) throw new Error('Site, grid, visit time and total meter reading are required.');
       if ([peak, offpeak].some(v => v != null && v < 0)) throw new Error('Meter readings cannot be negative.');
       if (previous && (calc.hours == null || calc.hours <= 0 || calc.delta == null || calc.delta < 0)) throw new Error('Current timestamp must be after previous visit and total meter reading must not decrease. Check meter replacement/rollover before submitting.');
-      const { error } = await supabase.from('mg_field_visits').insert({ user_id: uid, site_id: site.trim(), grid: grid.trim(), visited_at: new Date(current.at).toISOString(), total_kwh: total, peak_kwh: peak, offpeak_kwh: offpeak, locked_monthly_units: number(current.locked), criteria_days: number(current.days), previous_visit_id: previous?.id || null, elapsed_hours: calc.hours, consumed_kwh: calc.delta, hourly_kwh: calc.actual, expected_kwh_hour: calc.expected, deviation_pct: calc.deviation, notes: current.notes });
+      const { data: savedVisit, error } = await supabase.from('mg_field_visits').insert({ user_id: uid, site_id: site.trim(), grid: grid.trim(), visited_at: new Date(current.at).toISOString(), total_kwh: total, peak_kwh: peak, offpeak_kwh: offpeak, locked_monthly_units: number(current.locked), criteria_days: number(current.days), previous_visit_id: previous?.id || null, elapsed_hours: calc.hours, consumed_kwh: calc.delta, hourly_kwh: calc.actual, expected_kwh_hour: calc.expected, deviation_pct: calc.deviation, notes: current.notes }).select('id,site_id').single();
       if (error) throw error;
+      if (!savedVisit?.id) throw new Error('Visit insert returned no saved record.');
+      onSaved?.(site.trim(), 'visit');
       setMessage('Visit saved. The next reading will automatically use this visit as the baseline.'); setVisitRefresh(v => v + 1);
-    } catch (e) { setMessage(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
+    } catch (e) { setMessageError(true); setMessage(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
   }
   async function saveCase() {
-    setBusy(true); setMessage('');
+    setBusy(true); setMessage(''); setMessageError(false);
     try {
       const uid = await userId();
       if (!site.trim() || !caseDetails.description.trim()) throw new Error('Site and investigation description are required.');
@@ -95,10 +98,12 @@ export default function MeterGuardFieldInvestigations({ initialSite = '', initia
       const missing = required.filter(k => !files[k]); if (missing.length) throw new Error(`Missing required photographs: ${missing.join(', ')}`);
       const caseId = crypto.randomUUID();
       const evidence = await uploadEvidence(uid, caseId, evidenceNames[caseType]);
-      const { error } = await supabase.from('mg_investigation_cases').insert({ id: caseId, user_id: uid, site_id: site.trim(), grid: grid.trim(), visit_id: visits[0].id, case_type: caseType, status: 'Open', suspected_party: caseType === 'theft' ? caseDetails.suspectedParty : null, meter_verified: caseDetails.meterVerified, description: caseDetails.description, technical_data: caseType === 'criteria' ? { omo_l1: number(caseDetails.omoL1), omo_l2: number(caseDetails.omoL2), omo_l3: number(caseDetails.omoL3), omo_bb_ah: number(caseDetails.omoBbAh), omo_bb_type: caseDetails.omoBbType, csu_load_kw: number(caseDetails.csuLoadKw), csu_bb_ah: number(caseDetails.csuBbAh), charging_coefficient: number(caseDetails.chargingCoefficient), proposed_monthly_units: number(caseDetails.proposedUnits), csu_available: !!files.csu_equipment_load } : {}, evidence_paths: evidence });
+      const { data: savedCase, error } = await supabase.from('mg_investigation_cases').insert({ id: caseId, user_id: uid, site_id: site.trim(), grid: grid.trim(), visit_id: visits[0].id, case_type: caseType, status: 'Open', suspected_party: caseType === 'theft' ? caseDetails.suspectedParty : null, meter_verified: caseDetails.meterVerified, description: caseDetails.description, technical_data: caseType === 'criteria' ? { omo_l1: number(caseDetails.omoL1), omo_l2: number(caseDetails.omoL2), omo_l3: number(caseDetails.omoL3), omo_bb_ah: number(caseDetails.omoBbAh), omo_bb_type: caseDetails.omoBbType, csu_load_kw: number(caseDetails.csuLoadKw), csu_bb_ah: number(caseDetails.csuBbAh), charging_coefficient: number(caseDetails.chargingCoefficient), proposed_monthly_units: number(caseDetails.proposedUnits), csu_available: !!files.csu_equipment_load } : {}, evidence_paths: evidence }).select('id,site_id').single();
       if (error) throw error;
+      if (!savedCase?.id) throw new Error('Case insert returned no saved record.');
+      onSaved?.(site.trim(), 'case');
       setMessage(`Case registered (${caseId}). Evidence stored privately. Status: Open.`); setVisitRefresh(v => v + 1); setFiles({});
-    } catch (e) { setMessage(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
+    } catch (e) { setMessageError(true); setMessage(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
   }
   const inp = (label: string, key: keyof typeof caseDetails, type = 'number') => <label style={{ fontSize: 13 }}>{label}<input type={type} style={field} value={String(caseDetails[key])} onChange={e => setCaseDetails(v => ({ ...v, [key]: e.target.value }))}/></label>;
   return <div style={{ color: '#153c32' }}>
@@ -118,6 +123,6 @@ export default function MeterGuardFieldInvestigations({ initialSite = '', initia
     {caseType === 'criteria' && <p style={{ fontSize: 12, color: '#98631b' }}>CSU evidence is requested when available; missing CSU must be explained in the description. OMO L1/L2/L3, OMO BB and field phase photographs are mandatory. Criteria changes require management approval.</p>}
     <textarea style={{ ...field, minHeight: 90, margin: '12px 0' }} placeholder="Investigation description, suspected issue, CSU availability, corrective action" value={caseDetails.description} onChange={e => setCaseDetails(v => ({ ...v, description: e.target.value }))}/><button style={action} disabled={busy} onClick={saveCase}>Register case and upload evidence</button></div>
     <div style={panel}><h3>3. Previous visits and tickets</h3><h4>Visits</h4><div style={{ overflowX: 'auto' }}><table style={{ width: '100%', textAlign: 'left' }}><thead><tr><th>Date</th><th>Total kWh</th><th>kWh/hour</th><th>Expected</th><th>Deviation</th></tr></thead><tbody>{visits.map(v => <tr key={v.id}><td>{new Date(v.visited_at).toLocaleString('en-PK')}</td><td>{v.total_kwh}</td><td>{pretty(v.hourly_kwh)}</td><td>{pretty(v.expected_kwh_hour)}</td><td>{pretty(v.deviation_pct)}%</td></tr>)}</tbody></table></div><h4>Tickets</h4>{cases.map(c => <div key={c.id} style={{ borderBottom: '1px solid #ddd', padding: 8 }}>{c.case_type} · {c.status} · {new Date(c.created_at).toLocaleDateString('en-PK')} · {c.id}</div>)}{!cases.length && <p>No tickets yet.</p>}</div>
-    {message && <div role="status" style={{ ...panel, color: message.toLowerCase().includes('saved') || message.toLowerCase().includes('registered') ? '#116d4e' : '#a34225' }}>{message}</div>}
+    {message && <div role="status" style={{ ...panel, color: !messageError ? '#116d4e' : '#a34225' }}>{message}</div>}
   </div>;
 }
