@@ -80,12 +80,11 @@
     
 // Management verification: uses consecutive TOTAL-register observations only.
 type VerificationStatus='pending'|'invalid'|'missing'|'normal'|'revision'|'investigate';
-type VerificationRow={site:Site;count:number;first:Reading|null;last:Reading|null;hours:number|null;units:number|null;actual:number|null;hq:number|null;rms:number|null;status:VerificationStatus};
 function ConsumptionVerification({sites,readings,masterSites,rmsCriteria,onEvidence}:{sites:Site[];readings:Reading[];masterSites:MasterSite[];rmsCriteria:Record<string,number>;onEvidence:(site:Site)=>void}){
  const [region,setRegion]=useState('All');const [grid,setGrid]=useState('All');const [state,setState]=useState('All');const [query,setQuery]=useState('');
  const masterMap=useMemo(()=>new Map(masterSites.map(m=>[String(m.site_id),m])),[masterSites]);
  const rows=useMemo(()=>{const groups=new Map<string,Reading[]>();for(const r of readings){const a=groups.get(String(r.site_id))||[];a.push(r);groups.set(String(r.site_id),a)}return sites.map(site=>{
-  const a=(groups.get(String(site.id))||[]).slice().sort((x,y)=>Date.parse(x.reading_at)-Date.parse(y.reading_at));const last=a.at(-1)||null;const first=a.length>=2?a[a.length-2]:null;
+  const a=(groups.get(String(site.id))||[]).slice().sort((x,y)=>Date.parse(x.reading_at)-Date.parse(y.reading_at));const first=a.length>=2?a[a.length-2]:(a[0]||null);const last=a.length>=2?a[a.length-1]:null;
   const hours=first&&last?(Date.parse(last.reading_at)-Date.parse(first.reading_at))/3600000:null;
   const units=first&&last&&first.total_register!=null&&last.total_register!=null?last.total_register-first.total_register:null;
   const actual=hours!=null&&hours>0&&units!=null&&units>=0?units/hours:null;
