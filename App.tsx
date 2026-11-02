@@ -280,13 +280,16 @@ export default function App(){
 
       if(previous&&(new Date(pstToIso(date)).getTime()<=new Date(previous.reading_at).getTime()||p<previous.peak||o<previous.off_peak||(previous.total_register!=null&&t<previous.total_register)))return setMessage('Visit must be later than the previous visit and cumulative registers must not decrease.');
 
-     // Reject unchanged cumulative registers even if the user chooses a later timestamp.
-     if(previous&&Math.abs(p-Number(previous.peak))<0.005&&Math.abs(o-Number(previous.off_peak))<0.005&&previous.total_register!=null&&Math.abs(t-Number(previous.total_register))<0.005)return setMessage('Duplicate reading blocked: Peak, Off-Peak and Total are unchanged from the previous visit. Do not submit again until the meter registers change.');
-     // Recheck the database immediately before uploading photographs to avoid stale UI state.
+     // Total kWh is the authoritative duplicate key for each site.
+     if(previous?.total_register!=null&&Math.abs(t-Number(previous.total_register))<0.005)return setMessage('Duplicate Total kWh blocked: this site already has the same total meter reading. Enter a changed cumulative Total kWh value.');
+     // Check all stored readings, not just the latest, before uploading photos.
+     const {data:duplicateRows,error:duplicateError}=await supabase.from('meter_readings').select('id').eq('site_id',selectedSite.id).eq('total_register',t).limit(1);
+     if(duplicateError)return setMessage('Could not validate Total kWh against saved readings: '+duplicateError.message);
+     if(duplicateRows?.length)return setMessage('Duplicate Total kWh blocked: this exact total meter reading already exists for this site. No photos were uploaded.');
      const {data:latestRows,error:latestError}=await supabase.from('meter_readings').select('id,peak,off_peak,total_register,reading_at').eq('site_id',selectedSite.id).order('reading_at',{ascending:false}).limit(1);
      if(latestError)return setMessage('Could not verify the latest reading: '+latestError.message);
      const latest=latestRows?.[0];
-     if(latest&&Math.abs(p-Number(latest.peak))<0.005&&Math.abs(o-Number(latest.off_peak))<0.005&&latest.total_register!=null&&Math.abs(t-Number(latest.total_register))<0.005)return setMessage('Duplicate reading blocked: all three registers match the latest saved reading for this site.');
+     if(latest?.total_register!=null&&Math.abs(t-Number(latest.total_register))<0.005)return setMessage('Duplicate Total kWh blocked: the latest saved total meter reading is unchanged.');
      if(latest&&new Date(pstToIso(date)).getTime()<=new Date(latest.reading_at).getTime())return setMessage('Visit time must be later than the latest saved reading.');
       if(new Date(pstToIso(date)).getTime()>Date.now()+300000)return setMessage('Visit date cannot be in the future.');
 
