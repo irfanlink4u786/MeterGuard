@@ -183,7 +183,7 @@ const valid=(g:unknown)=>/^C6\d{3}$/.test(String(g??'').trim().toUpperCase());
 const pattoki=new Set('4151,41964,41969,41974,41976,41978,41979,43491,43492,44103,44110,4426,44432,4689,5947,5948,5998,6004,6124,6242,6587,6593,7461,7464,6005'.split(','));
 const panel:CSSProperties={background:'#fff',border:'1px solid #dce5ed',borderRadius:16,padding:20};
 const control:CSSProperties={padding:'9px 12px',borderRadius:9,border:'1px solid #cddbe7',background:'#fff',color:'#153b50',cursor:'pointer'};
-const h3=(s:string)=><h3 style={{fontSize:18,margin:'0 0 12px',color:'#16394d'}}>{s}</h3>;
+const h3=(s:string)=><h3 style={{fontSize:18,fontWeight:700,margin:'0 0 16px',padding:'12px 16px',borderRadius:10,background:'#edf5f4',borderLeft:'4px solid #397b77',color:'#214b50',lineHeight:1.4}}>{s}</h3>;
 const csv=(name:string,headers:string[],data:(string|number|null)[][])=>{const q=(v:unknown)=>'"'+String(v??'').replace(/"/g,'""')+'"';const blob=new Blob(['\uFEFF'+[headers,...data].map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)};
 function C6HQOverviewInner({bills,sites,masterSites}:Props){
  const poc=useMemo(()=>new Map(masterSites.map(s=>[s.site_id,s])),[masterSites]);
@@ -268,7 +268,7 @@ function C6HQOverviewInner({bills,sites,masterSites}:Props){
    <p style={{fontSize:12,color:'#637f91'}}>Monthly billing history uses reporting sites available in each month; changes in site coverage affect total units. This trend uses the same source billing master as the Executive Overview, but is restricted to C-6 eligible sites.</p>
   </section>
   <section style={panel}>
-   {h3('03 · Billing vs RMS vs HQ Locked')}
+   {h3('Billing vs RMS vs HQ Locked')}
    <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
     {summaryCard('Actual billed',million(totalBilled)+' kWh','All reporting sites')}
     {summaryCard('RMS justified baseline',million(assessed.reduce((a,r)=>a+(r.rms||0),0))+' kWh',assessed.length+' assessed sites')}
@@ -277,7 +277,7 @@ function C6HQOverviewInner({bills,sites,masterSites}:Props){
    <p style={{fontSize:12,color:'#637f91',marginTop:10}}>Baseline totals have different coverage. Use the site-level variance and matched-site filters below before comparing totals directly.</p>
   </section>
   <section style={panel}>
-   {h3('04 · C-6 Priority Grid Accountability')}
+   {h3('C-6 Priority Grid Accountability')}
    <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}><thead><tr>{['Grid','Reporting sites','Action required','Excess above RMS (kWh)','Investigation'].map(h=><th key={h} style={{textAlign:'left',padding:9,background:'#f1f6f9',borderBottom:'1px solid #dce6ec'}}>{h}</th>)}</tr></thead><tbody>{byGrid.map(g=><tr key={g.grid}><td style={{padding:9,borderBottom:'1px solid #e6edf2'}}>{g.grid}</td><td>{g.sites}</td><td>{g.open}</td><td>{fmt(g.excess)}</td><td><button style={control} onClick={()=>{setGrid(g.grid);setView('All sites')}}>Filter grid</button></td></tr>)}</tbody></table></div>
   </section>
   {fetchError&&<div style={{...panel,color:'#a53c27'}}>RMS fetch error: {fetchError}</div>}
