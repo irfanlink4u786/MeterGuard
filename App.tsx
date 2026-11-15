@@ -262,7 +262,7 @@ function C6HQOverviewInner({bills,sites,masterSites}:Props){
    {h3('Monthly Billing Trend — C-6')}
    
    <p style={{fontSize:12,color:'#637f91'}}>Same first-bill treatment as Executive Overview: September bills for C-6 sites 5574 and 42908 are modeled at 4,000 kWh in the adjusted view, only where a September record exists. Original database values remain unchanged. Site 7315 belongs to Central-1.</p>
-   <div style={{display:'flex',alignItems:'end',gap:6,height:190,overflowX:'auto',padding:'10px 0'}}>
+   <div style={{display:'flex',alignItems:'stretch',gap:6,minHeight:225,overflowX:'auto',padding:'12px 0 8px'}}>
     {monthSeries.map(r=><div key={r.m} style={{minWidth:65,flex:1,textAlign:'center',fontSize:10,color:'#537083'}}><div style={{fontWeight:700,marginBottom:5}}>{(r.kwh/1000000).toFixed(2)}M</div><div style={{height:125,display:'flex',alignItems:'end',justifyContent:'center'}}><div style={{width:'75%',height:Math.max(2,125*r.kwh/maxTrend),background:r.m===month?'#147da0':'#e5a33f',borderRadius:'5px 5px 0 0'}}/></div><div style={{marginTop:5}}>{label(r.m)}</div><div>{r.sites} / {eligibleSiteCount} eligible sites</div></div>)}
    </div>
    <p style={{fontSize:12,color:'#637f91'}}>Monthly billed consumption is shown against the validated C-6 eligible-site population ({eligibleSiteCount} sites for the selected grid). Each month displays reporting / eligible sites; missing bills are not treated as zero consumption. The chart and KPI snapshot share the same eligible-site filter.</p>
