@@ -468,7 +468,6 @@ function ManagementInsights({mode}:{mode:'cases'|'monthly'}){
  const matched=rows.filter(x=>x.aug!=null&&x.sep!=null);
  const augTotal=matched.reduce((v,x)=>v+(x.aug||0),0),sepTotal=matched.reduce((v,x)=>v+(x.sep||0),0);
  const reduced=matched.filter(x=>(x.sep||0)<(x.aug||0)).length,increased=matched.filter(x=>(x.sep||0)>(x.aug||0)).length;
- const unresolved=rows.filter(x=>!actionMap.has(x.site_id)||!/^(Resolved - Pending Bill|Closed - Bill Verified)$/.test(actionMap.get(x.site_id)?.status||''));
  return <div style={{display:'grid',gap:18,color:'#173b45'}}>
  {loading&&<div style={panelStyle}>Loading management records…</div>}
  {error&&<div style={{...panelStyle,color:'#a12727'}}>Data validation warning: {error}</div>}
