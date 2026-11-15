@@ -224,9 +224,56 @@ function C6HQOverviewInner({bills,sites,masterSites}:Props){
  const topChart=[...rows].sort((a,b)=>a.grid.localeCompare(b.grid)||a.id.localeCompare(b.id));const yMax=Math.max(7000,...topChart.map(x=>x.units))*1.08;const y=(v:number)=>242-v/yMax*206;const gridAbove=[...new Set(rows.map(r=>r.grid))].sort().map(g=>({grid:g,above:rows.filter(r=>r.grid===g&&r.units>3420).length,total:rows.filter(r=>r.grid===g).length})).sort((a,b)=>b.above-a.above);const topGrid=gridAbove[0];
  const recurring=rows.filter(r=>r.highMonths>=minRecurring&&r.units>6000).sort((a,b)=>{const pa=a.status==='Action required'?1:0,pb=b.status==='Action required'?1:0;return pb-pa||b.highMonths-a.highMonths||b.excess-a.excess||b.over6k-a.over6k});
  const confirmedTheft=rows.filter(r=>r.status==='Action required'&&r.workstream==='CP Theft Investigation'&&r.evidenceStatus.startsWith('Recorded theft'));const criteriaRevision=rows.filter(r=>(r.status==='Action required'||r.status==='RMS pending')&&r.workstream==='Criteria Revision Required');const suspectedTheft=rows.filter(r=>(r.status==='Action required'||r.status==='RMS pending')&&r.workstream==='CP Theft Investigation'&&!r.evidenceStatus.startsWith('Recorded theft'));const meterCases=rows.filter(r=>r.status==='Action required'&&r.workstream==='CP Meter Faulty');const lescoCases=rows.filter(r=>r.status==='Action required'&&r.workstream==='Electricity Billing Discrepancies – Investigation Required');const urgent=[...rows].filter(r=>r.status==='Action required').sort((a,b)=>b.excess*Math.max(1,b.highMonths)-a.excess*Math.max(1,a.highMonths)).slice(0,5);const urgentMax=Math.max(1,...urgent.map(r=>r.excess));
+ const assessed=rows.filter(r=>r.rms!==null);
+ const totalBilled=rows.reduce((a,r)=>a+r.units,0);
+ const rmsExcess=assessed.reduce((a,r)=>a+Math.max(0,r.units-(r.rms||0)),0);
+ const aboveRms=assessed.filter(r=>r.units>(r.rms||0));
+ const aboveHq=rows.filter(r=>r.hq!==null&&r.units>r.hq);
+ const byGrid=[...new Set(rows.map(r=>r.grid))].sort().map(g=>{const a=rows.filter(r=>r.grid===g);return {grid:g,sites:a.length,excess:a.reduce((v,r)=>v+r.excess,0),open:a.filter(r=>r.status==='Action required').length}}).sort((a,b)=>b.excess-a.excess);
+ const latestPrev=months[months.indexOf(month)-1];
+ const prevMap=latestPrev?history.get(latestPrev):undefined;
+ const comparable=rows.filter(r=>prevMap?.has(r.id));
+ const prevTotal=comparable.reduce((a,r)=>a+(prevMap?.get(r.id)||0),0);
+ const currentComparable=comparable.reduce((a,r)=>a+r.units,0);
+ const delta=currentComparable-prevTotal;
+ const million=(v:number)=>(v/1000000).toFixed(3)+'M';
+ const summaryCard=(name:string,value:string,sub:string,accent='#164e68')=><div style={{background:'#f2f7fa',border:'1px solid #dce7ee',padding:15,borderRadius:12,minWidth:160,flex:'1 1 165px'}}><div style={{fontSize:12,color:'#567084'}}>{name}</div><div style={{fontSize:25,fontWeight:800,color:accent,margin:'5px 0'}}>{value}</div><div style={{fontSize:11,color:'#647e90'}}>{sub}</div></div>;
  return <div style={{display:'grid',gap:18,color:'#15394e'}}>
   
   <section style={{...panel,display:'flex',flexWrap:'wrap',gap:12,alignItems:'end'}}><label>Grid<div><select value={grid} style={control} onChange={e=>{setGrid(e.target.value);setView('All sites')}}><option>All Grids</option>{gridOptions.map(g=><option key={g}>{g}</option>)}</select></div></label><label>Billing month<div><select value={month} style={control} onChange={e=>{setMonth(e.target.value);setView('All sites')}}>{months.map(m=><option key={m} value={m}>{fullLabel(m)}</option>)}</select></div></label><button style={control} onClick={()=>{setGrid('All Grids');setMonth('2026-09');setView('All sites');setRange('All ranges');setSearch('')}}>Reset</button><button style={control} onClick={()=>exportRows(scoped)}>Export visible sites CSV</button><span style={{marginLeft:'auto',fontSize:12,color:'#6c8293'}}>C-6 only · Live billing + RMS criteria snapshot</span></section>
+  <section style={panel}>
+   {h3('01 · C-6 Billing Health — Executive Snapshot')}
+   <p style={{fontSize:12,color:'#637f91',margin:'6px 0 14px'}}>Selected billing month · {fullLabel(month)} · {grid}. RMS and HQ comparisons are separate; deviations require field verification and are not proof of theft or recoverable savings.</p>
+   <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
+    {summaryCard('Billed consumption',million(totalBilled)+' kWh',rows.length+' reporting sites')}
+    {summaryCard('Change vs previous month',(delta>=0?'+':'')+million(delta)+' kWh',comparable.length+' matched sites',delta>0?'#b64b28':'#0e8565')}
+    {summaryCard('Above RMS',String(aboveRms.length)+' sites',assessed.length+' RMS-assessed sites','#bb4c2d')}
+    {summaryCard('Excess vs RMS',million(rmsExcess)+' kWh','Sum of positive site variances','#bb4c2d')}
+    {summaryCard('Above HQ',String(aboveHq.length)+' sites','Locked HQ criteria comparison')}
+    {summaryCard('Recorded issue cases',String(confirmedTheft.length+meterCases.length+criteriaRevision.length+lescoCases.length),'Categorized action-required / pending cases')}
+   </div>
+   <p style={{fontSize:12,color:'#637f91',marginTop:12}}>Month-on-month change is calculated on the same sites in both months. Excess above RMS is a technical investigation workload, not an established financial saving.</p>
+  </section>
+  <section style={panel}>
+   {h3('02 · Monthly Billing Trend — C-6')}
+   <div style={{display:'flex',alignItems:'end',gap:6,height:190,overflowX:'auto',padding:'10px 0'}}>
+    {monthSeries.map(r=><div key={r.m} style={{minWidth:65,flex:1,textAlign:'center',fontSize:10,color:'#537083'}}><div style={{fontWeight:700,marginBottom:5}}>{(r.kwh/1000000).toFixed(2)}M</div><div style={{height:125,display:'flex',alignItems:'end',justifyContent:'center'}}><div style={{width:'75%',height:Math.max(2,125*r.kwh/maxTrend),background:r.m===month?'#147da0':'#e5a33f',borderRadius:'5px 5px 0 0'}}/></div><div style={{marginTop:5}}>{label(r.m)}</div><div>{r.sites} sites</div></div>)}
+   </div>
+   <p style={{fontSize:12,color:'#637f91'}}>Monthly billing history uses reporting sites available in each month; changes in site coverage affect total units.</p>
+  </section>
+  <section style={panel}>
+   {h3('03 · Billing vs RMS vs HQ Locked')}
+   <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
+    {summaryCard('Actual billed',million(totalBilled)+' kWh','All reporting sites')}
+    {summaryCard('RMS justified baseline',million(assessed.reduce((a,r)=>a+(r.rms||0),0))+' kWh',assessed.length+' assessed sites')}
+    {summaryCard('HQ locked baseline',million(rows.reduce((a,r)=>a+(r.hq||0),0))+' kWh',rows.filter(r=>r.hq!==null).length+' sites with HQ criteria')}
+   </div>
+   <p style={{fontSize:12,color:'#637f91',marginTop:10}}>Baseline totals have different coverage. Use the site-level variance and matched-site filters below before comparing totals directly.</p>
+  </section>
+  <section style={panel}>
+   {h3('04 · C-6 Priority Grid Accountability')}
+   <div style={{overflowX:'auto'}}><table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}><thead><tr>{['Grid','Reporting sites','Action required','Excess above RMS (kWh)','Investigation'].map(h=><th key={h} style={{textAlign:'left',padding:9,background:'#f1f6f9',borderBottom:'1px solid #dce6ec'}}>{h}</th>)}</tr></thead><tbody>{byGrid.map(g=><tr key={g.grid}><td style={{padding:9,borderBottom:'1px solid #e6edf2'}}>{g.grid}</td><td>{g.sites}</td><td>{g.open}</td><td>{fmt(g.excess)}</td><td><button style={control} onClick={()=>{setGrid(g.grid);setView('All sites')}}>Filter grid</button></td></tr>)}</tbody></table></div>
+  </section>
   {fetchError&&<div style={{...panel,color:'#a53c27'}}>RMS fetch error: {fetchError}</div>}
   {expanded.kpi&&inlineTable(rows.filter(r=>matchesView(r,expanded.kpi)),'kpi')}
   <section style={panel}>
