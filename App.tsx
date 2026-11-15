@@ -24,8 +24,8 @@ function HQBillingUploader({client,session}:{client:any;session:Session|null}){
  const norm=(s:string)=>s.toLowerCase().replace(/[^a-z0-9]/g,'');
  const headers=data[0].map(norm);
  const idx=(...keys:string[])=>headers.findIndex(h=>keys.some(k=>h===norm(k)));
- const site=idx('site id','site code','site_id','site'),month=idx('billing month','bill month','month','billing_month'),units=idx('billed kwh','billed units','consumption units','units','total units','billed_kwh','consumption');
- const region=idx('sub region','subregion','region'),grid=idx('grid'),criteria=idx('hq criteria','hq locked','locked criteria','criteria'),status=idx('billing status','billing classification','billing category'),reason=idx('reason','remarks','investigation reason','final reason');
+ const site=idx('site id','site code','site_id','site','name'),month=idx('billing month','bill month','month','billing_month'),units=idx('billed kwh','billed units','billed units(kwh)','consumption units','units','total units','billed_kwh','consumption');
+ const region=idx('sub region','subregion','region'),grid=idx('grid'),criteria=idx('hq criteria','hq locked','locked criteria','criteria','final criteria (kwh)'),status=idx('billing status','billing classification','billing category','bill status'),reason=idx('reason','remarks','investigation reason','final reason','region remarks');
  if(site<0||month<0||units<0)throw Error('Missing required headers: Site ID, Billing Month and Billed Units.');const seen=new Set<string>(),records:Record<string,unknown>[]=[];let invalid=0,duplicate=0;
  for(const row of data.slice(1)){const id=String(row[site]||'').trim(),raw=String(row[month]||'').trim(),v=Number(String(row[units]||'').replace(/,/g,''));const match=raw.match(/^(\d{4})[-/](\d{1,2})/)||raw.match(/^([A-Za-z]{3})[- ]?(\d{2,4})$/);let date='';
  if(match){if(/^\d{4}$/.test(match[1]))date=match[1]+'-'+match[2].padStart(2,'0')+'-01';else{const mi=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(match[1].toLowerCase());if(mi>=0)date=String(Number(match[2])<100?2000+Number(match[2]):Number(match[2]))+'-'+String(mi+1).padStart(2,'0')+'-01';}}
