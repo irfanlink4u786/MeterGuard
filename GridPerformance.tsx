@@ -9,7 +9,7 @@ type Action={site_id:string;workstream:string|null;evidence_status:string|null;o
 type Props={sites:Site[];bills:Bill[];masterSites:MasterSite[]};
 type Row={id:string;grid:string;kwh:number;rms:number|null;excess:number;status:'Justified'|'Action required'|'RMS pending'|'No current consumption';reason:string;months6k:number;category:string;verification:string};
 const pattoki=new Set('4151,41964,41969,41974,41976,41978,41979,43491,43492,44103,44110,4426,44432,4689,5947,5948,5998,6004,6124,6242,6587,6593,7461,7464,6005'.split(','));
-const months=Array.from({length:12},(_,i)=>new Date(Date.UTC(2025,8+i,1)).toISOString().slice(0,7));
+const months=Array.from({length:13},(_,i)=>new Date(Date.UTC(2025,8+i,1)).toISOString().slice(0,7));
 const fmt=(x:number)=>Math.round(x).toLocaleString('en-PK');
 const mLabel=(m:string)=>new Date(m+'-01T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'});
 const valid=(g:string|null|undefined)=>/^C6\d{3}$/.test(String(g??'').trim().toUpperCase());
