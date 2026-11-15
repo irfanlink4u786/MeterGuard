@@ -1,4 +1,4 @@
-# CP AuditTrack — assigned-sites field app
+# Meter Guard — assigned-sites field app
 
 Supabase project: `jwgtnlfyaoxtadgtuxpi`.
 
