@@ -34,7 +34,7 @@ function MonthlyConsumptionHistory({masterSites}:{masterSites:MasterSite[]}){
 
 function AugSepBillingComparison({masterSites}:{masterSites:MasterSite[]}){
  const [scope,setScope]=useState<'Overview'|'Central-1'|'Central-6'>('Overview');
- const [firstBillMode,setFirstBillMode]=useState<'with'|'without'>('with');
+ const [firstBillMode,setFirstBillMode]=useState<'with'|'without'>('without');
  const [records,setRecords]=useState<{site_id:string;billing_month:string;billed_kwh:number}[]>([]);
  const [error,setError]=useState(''),[loading,setLoading]=useState(true);
  useEffect(()=>{let alive=true;(async()=>{try{if(!supabase)throw Error('Database unavailable');const all:typeof records=[];for(let offset=0;offset<5000;offset+=1000){const {data,error}=await supabase.from('mg_master_billing_consumption').select('site_id,billing_month,billed_kwh').in('billing_month',['2026-08-01','2026-09-01']).order('site_id').order('billing_month').range(offset,offset+999);if(error)throw error;all.push(...(data||[]));if((data||[]).length<1000)break;}if(alive)setRecords(all)}catch(e){if(alive)setError(e instanceof Error?e.message:String(e))}finally{if(alive)setLoading(false)}})();return()=>{alive=false}},[]);
@@ -237,17 +237,21 @@ function C6HQOverviewInner({bills,sites,masterSites}:Props){
  const prevTotal=comparable.reduce((a,r)=>a+(prevMap?.get(r.id)||0),0);
  const currentComparable=comparable.reduce((a,r)=>a+r.units,0);
  const delta=currentComparable-prevTotal;
+ const firstBillAdjustment=(id:string,u:number)=>c6FirstBillMode==='without'&&month==='2026-09'&&(['5574','42908'].includes(id))?4000-u:0;
+ const adjustedTotalBilled=totalBilled+rows.reduce((a,r)=>a+firstBillAdjustment(r.id,r.units),0);
+ const adjustedDelta=delta+comparable.reduce((a,r)=>a+firstBillAdjustment(r.id,r.units),0);
  const million=(v:number)=>Math.abs(v)<1000000?(v/1000).toFixed(2)+'K':(v/1000000).toFixed(2)+'M';
  const summaryCard=(name:string,value:string,sub:string,accent='#164e68')=><div style={{background:'#f2f7fa',border:'1px solid #dce7ee',padding:15,borderRadius:12,minWidth:160,flex:'1 1 165px'}}><div style={{fontSize:12,color:'#567084'}}>{name}</div><div style={{fontSize:25,fontWeight:800,color:accent,margin:'5px 0'}}>{value}</div><div style={{fontSize:11,color:'#647e90'}}>{sub}</div></div>;
  return <div style={{display:'grid',gap:18,color:'#15394e'}}>
   
   <section style={{...panel,display:'flex',flexWrap:'wrap',gap:12,alignItems:'end'}}><label>Grid<div><select value={grid} style={control} onChange={e=>{setGrid(e.target.value);setView('All sites')}}><option>All Grids</option>{gridOptions.map(g=><option key={g}>{g}</option>)}</select></div></label><label>Billing month<div><select value={month} style={control} onChange={e=>{setMonth(e.target.value);setView('All sites')}}>{months.map(m=><option key={m} value={m}>{fullLabel(m)}</option>)}</select></div></label><button style={control} onClick={()=>{setGrid('All Grids');setMonth('2026-09');setView('All sites');setRange('All ranges');setSearch('')}}>Reset</button><button style={control} onClick={()=>exportRows(scoped)}>Export visible sites CSV</button><span style={{marginLeft:'auto',fontSize:12,color:'#6c8293'}}>C-6 only · Live billing + RMS criteria snapshot</span></section>
   <section style={panel}>
-   {h3('01 · C-6 Billing Health — Executive Snapshot')}
+   {h3('C-6 Billing Health — Executive Snapshot')}
+   <div style={{display:'flex',alignItems:'center',flexWrap:'wrap',gap:8,margin:'12px 0'}}><strong style={{fontSize:12}}>First-bill treatment:</strong>{(['with','without'] as const).map(v=><button key={v} type="button" aria-pressed={c6FirstBillMode===v} onClick={()=>setC6FirstBillMode(v)} style={{...control,background:c6FirstBillMode===v?'#124b5c':'#fff',color:c6FirstBillMode===v?'#fff':'#15394e'}}>{v==='with'?'With First Bill (Actual)':'Without First Bill (Adjusted)'}</button>)}</div>
    <p style={{fontSize:12,color:'#637f91',margin:'6px 0 14px'}}>Selected billing month · {fullLabel(month)} · {grid}. RMS and HQ comparisons are separate; deviations require field verification and are not proof of theft or recoverable savings.</p>
    <div style={{display:'flex',flexWrap:'wrap',gap:10}}>
-    {summaryCard('Billed consumption',million(totalBilled)+' kWh',rows.length+' reporting sites')}
-    {summaryCard('Change vs previous month',(delta>=0?'+':'')+million(delta)+' kWh',comparable.length+' matched sites',delta>0?'#b64b28':'#0e8565')}
+    {summaryCard('Billed consumption',million(adjustedTotalBilled)+' kWh',rows.length+' reporting sites')}
+    {summaryCard('Change vs previous month',(adjustedDelta>=0?'+':'')+million(adjustedDelta)+' kWh',comparable.length+' matched sites',adjustedDelta>0?'#b64b28':'#0e8565')}
     {summaryCard('Above RMS',String(aboveRms.length)+' sites',assessed.length+' RMS-assessed sites','#bb4c2d')}
     {summaryCard('Excess vs RMS',million(rmsExcess)+' kWh','Sum of positive site variances','#bb4c2d')}
     {summaryCard('Above HQ',String(aboveHq.length)+' sites','Locked HQ criteria comparison')}
@@ -256,8 +260,8 @@ function C6HQOverviewInner({bills,sites,masterSites}:Props){
    <p style={{fontSize:12,color:'#637f91',marginTop:12}}>Month-on-month change is calculated on the same sites in both months. Excess above RMS is a technical investigation workload, not an established financial saving.</p>
   </section>
   <section style={panel}>
-   {h3('02 · Monthly Billing Trend — C-6')}
-   <div style={{display:'flex',alignItems:'center',flexWrap:'wrap',gap:8,margin:'12px 0'}}><strong style={{fontSize:12}}>First-bill treatment:</strong>{(['with','without'] as const).map(v=><button key={v} type="button" aria-pressed={c6FirstBillMode===v} onClick={()=>setC6FirstBillMode(v)} style={{...control,background:c6FirstBillMode===v?'#124b5c':'#fff',color:c6FirstBillMode===v?'#fff':'#15394e'}}>{v==='with'?'With First Bill (Actual)':'Without First Bill (Adjusted)'}</button>)}</div>
+   {h3('Monthly Billing Trend — C-6')}
+   
    <p style={{fontSize:12,color:'#637f91'}}>Same first-bill treatment as Executive Overview: September bills for C-6 sites 5574 and 42908 are modeled at 4,000 kWh in the adjusted view, only where a September record exists. Original database values remain unchanged. Site 7315 belongs to Central-1.</p>
    <div style={{display:'flex',alignItems:'end',gap:6,height:190,overflowX:'auto',padding:'10px 0'}}>
     {monthSeries.map(r=><div key={r.m} style={{minWidth:65,flex:1,textAlign:'center',fontSize:10,color:'#537083'}}><div style={{fontWeight:700,marginBottom:5}}>{(r.kwh/1000000).toFixed(2)}M</div><div style={{height:125,display:'flex',alignItems:'end',justifyContent:'center'}}><div style={{width:'75%',height:Math.max(2,125*r.kwh/maxTrend),background:r.m===month?'#147da0':'#e5a33f',borderRadius:'5px 5px 0 0'}}/></div><div style={{marginTop:5}}>{label(r.m)}</div><div>{r.sites} sites</div></div>)}
