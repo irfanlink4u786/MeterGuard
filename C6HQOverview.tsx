@@ -9,10 +9,8 @@ type Status='Justified'|'Action required'|'RMS pending'|'No current consumption'
 type Item={id:string;grid:string;units:number;rms:number|null;hq:number|null;status:Status;excess:number;reason:string;action:string;highMonths:number;annualKwh:number;over6k:number;monthsReported:number;workstream:string;evidenceStatus:string};
 type Props={bills:Bill[];sites:Site[];masterSites:MasterSite[];onInspect:(id:string)=>void};
 const months=Array.from({length:13},(_,i)=>new Date(Date.UTC(2025,8+i,1)).toISOString().slice(0,7));
-const label=(m:string)=>new Date(m+'-01T00:00:00Z').toLocaleDateString('en-GB',{month:'short',year:'2-digit',timeZone:'UTC'});
 const fullLabel=(m:string)=>new Date(m+'-01T00:00:00Z').toLocaleDateString('en-GB',{month:'long',year:'numeric',timeZone:'UTC'});
 const fmt=(v:number,d=0)=>v.toLocaleString('en-PK',{minimumFractionDigits:d,maximumFractionDigits:d});
-const million=(v:number)=>`${(v/1000000).toFixed(2)}M`;
 const n=(v:unknown):number|null=>{if(v===null||v===undefined||String(v).trim()==='')return null;const x=Number(String(v).replace(/,/g,''));return Number.isFinite(x)&&x>0?x:null};
 const valid=(g:unknown)=>/^C6\d{3}$/.test(String(g??'').trim().toUpperCase());
 // Pattoki sites are outside C-6 RMS evaluation.
