@@ -5,7 +5,7 @@ type Bill={site_id:string;billed_month:string;total_units:number|null;grid:strin
 type Props={masterSites:MasterSite[];bills:Bill[]};
 type Criteria={site_id:string;rms_criteria:string|null;final_reason:string|null;action_category:string|null};
 type Detail={site_id:string;grid:string;employee:string;role:string;billed:number;rms:number|null;justified:number;unjustified:number;status:string;issue:string;months6k:number};
-const months=Array.from({length:12},(_,i)=>new Date(Date.UTC(2025,8+i,1)).toISOString().slice(0,7));
+const months=Array.from({length:13},(_,i)=>new Date(Date.UTC(2025,8+i,1)).toISOString().slice(0,7));
 const fmt=(n:number)=>Math.round(n).toLocaleString('en-PK');
 const panel:CSSProperties={padding:18,borderRadius:14,background:'#fff',border:'1px solid #dbe6ec'};
 const button:CSSProperties={padding:'8px 12px',border:'1px solid #cad9e3',borderRadius:8,background:'#fff',cursor:'pointer',color:'#1b4258'};
