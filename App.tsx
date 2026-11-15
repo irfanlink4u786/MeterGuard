@@ -166,6 +166,7 @@ function HQBillingUploader({client,session}:{client:any;session:Session|null}){
 }
 
 // C-6 HQ Overview is embedded in App.tsx; no separate C6HQOverview.tsx import is required.
+function classifyC6BillingReason(reason:string){return /cp electricity theft/i.test(reason)?'CP theft':/faulty.*meter|meter.*fault|meter.*display/i.test(reason)?'CP meter faulty':/combined.*billing|lesco|excessive unit|billed units exceed rms/i.test(reason)?'DISCO / billing discrepancy':/network load increase|criteria revision|rms load above hq|hq criteria above rms/i.test(reason)?'HQ / load revision':'Investigation required'}
 const C6HQOverview = (() => {
 
 type Bill={site_id:string;billed_month:string;total_units:number|null;grid:string|null};
@@ -186,7 +187,6 @@ const panel:CSSProperties={background:'#fff',border:'1px solid #dce5ed',borderRa
 const control:CSSProperties={padding:'9px 12px',borderRadius:9,border:'1px solid #cddbe7',background:'#fff',color:'#153b50',cursor:'pointer'};
 const h3=(s:string)=><h3 style={{fontSize:18,fontWeight:700,margin:'0 0 16px',padding:'12px 16px',borderRadius:10,background:'#edf5f4',borderLeft:'4px solid #397b77',color:'#214b50',lineHeight:1.4}}>{s}</h3>;
 const csv=(name:string,headers:string[],data:(string|number|null)[][])=>{const q=(v:unknown)=>'"'+String(v??'').replace(/"/g,'""')+'"';const blob=new Blob(['\uFEFF'+[headers,...data].map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)};
-function classifyC6BillingReason(reason:string){return /cp electricity theft/i.test(reason)?'CP theft':/faulty.*meter|meter.*fault|meter.*display/i.test(reason)?'CP meter faulty':/combined.*billing|lesco|excessive unit|billed units exceed rms/i.test(reason)?'DISCO / billing discrepancy':/network load increase|criteria revision|rms load above hq|hq criteria above rms/i.test(reason)?'HQ / load revision':'Investigation required'}
 function C6HQOverviewInner({bills,sites,masterSites}:Props){
  const poc=useMemo(()=>new Map(masterSites.map(s=>[s.site_id,s])),[masterSites]);
  const [criteria,setCriteria]=useState<Criteria[]>([]); const [masterBills,setMasterBills]=useState<Bill[]>([]);const [fetchError,setFetchError]=useState('');const [,setLoading]=useState(true);
