@@ -236,7 +236,7 @@ function C6HQOverviewInner({bills,sites,masterSites}:Props){
  const prevTotal=comparable.reduce((a,r)=>a+(prevMap?.get(r.id)||0),0);
  const currentComparable=comparable.reduce((a,r)=>a+r.units,0);
  const delta=currentComparable-prevTotal;
- const million=(v:number)=>(v/1000000).toFixed(3)+'M';
+ const million=(v:number)=>Math.abs(v)<1000000?(v/1000).toFixed(2)+'K':(v/1000000).toFixed(2)+'M';
  const summaryCard=(name:string,value:string,sub:string,accent='#164e68')=><div style={{background:'#f2f7fa',border:'1px solid #dce7ee',padding:15,borderRadius:12,minWidth:160,flex:'1 1 165px'}}><div style={{fontSize:12,color:'#567084'}}>{name}</div><div style={{fontSize:25,fontWeight:800,color:accent,margin:'5px 0'}}>{value}</div><div style={{fontSize:11,color:'#647e90'}}>{sub}</div></div>;
  return <div style={{display:'grid',gap:18,color:'#15394e'}}>
   
