@@ -12,10 +12,10 @@
 
 
 
-function HQBillingUploader({client,session}:{client:ReturnType<typeof createClient>|null;session:Session|null}){
+function HQBillingUploader({client,session}:{client:any;session:Session|null}){
  const [busy,setBusy]=useState(false),[feedback,setFeedback]=useState(''),[last,setLast]=useState('');
  const admin=session?.user.app_metadata?.mg_role==='admin';
- useEffect(()=>{if(!client||!session)return;client.from('mg_hq_billing_history').select('updated_at').order('updated_at',{ascending:false}).limit(1).then(({data})=>setLast(data?.[0]?.updated_at||''));},[client,session]);
+ useEffect(()=>{if(!client||!session)return;client.from('mg_hq_billing_history').select('updated_at').order('updated_at',{ascending:false}).limit(1).then(({data}:{data:{updated_at:string}[]|null})=>setLast(data?.[0]?.updated_at||''));},[client,session]);
  const parseCSV=(input:string)=>{const out:string[][]=[];let row:string[]=[],cell='',quoted=false;for(let i=0;i<input.length;i++){const c=input[i];if(c==='"'){if(quoted&&input[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}else if(c===','&&!quoted){row.push(cell);cell='';}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&input[i+1]==='\n')i++;row.push(cell);if(row.some(v=>v.trim()))out.push(row);row=[];cell='';}else cell+=c;}row.push(cell);if(row.some(v=>v.trim()))out.push(row);return out;};
  const upload=async(file:File)=>{if(!client||!admin)return;setBusy(true);setFeedback('');try{
  if(!/\.csv$/i.test(file.name))throw Error('Please save the HQ Excel sheet as CSV (UTF-8) before uploading.');
@@ -25,7 +25,7 @@ function HQBillingUploader({client,session}:{client:ReturnType<typeof createClie
  const idx=(...keys:string[])=>headers.findIndex(h=>keys.some(k=>h===norm(k)));
  const site=idx('site id','site code','site_id','site'),month=idx('billing month','bill month','month','billing_month'),units=idx('billed kwh','billed units','consumption units','units','total units','billed_kwh','consumption');
  const region=idx('sub region','subregion','region'),grid=idx('grid'),criteria=idx('hq criteria','hq locked','locked criteria','criteria'),status=idx('billing status','billing classification','billing category'),reason=idx('reason','remarks','investigation reason','final reason');
- if(site<0||month<0||units<0)throw Error('Missing required headers: Site ID, Billing Month and Billed Units.');const seen=new Set<string>(),records:any[]=[];let invalid=0,duplicate=0;
+ if(site<0||month<0||units<0)throw Error('Missing required headers: Site ID, Billing Month and Billed Units.');const seen=new Set<string>(),records:Record<string,unknown>[]=[];let invalid=0,duplicate=0;
  for(const row of data.slice(1)){const id=String(row[site]||'').trim(),raw=String(row[month]||'').trim(),v=Number(String(row[units]||'').replace(/,/g,''));const match=raw.match(/^(\d{4})[-/](\d{1,2})/)||raw.match(/^([A-Za-z]{3})[- ]?(\d{2,4})$/);let date='';
  if(match){if(/^\d{4}$/.test(match[1]))date=match[1]+'-'+match[2].padStart(2,'0')+'-01';else{const mi=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(match[1].toLowerCase());if(mi>=0)date=String(Number(match[2])<100?2000+Number(match[2]):Number(match[2]))+'-'+String(mi+1).padStart(2,'0')+'-01';}}
  if(!/^\d{3,6}$/.test(id)||!/^20\d{2}-(0[1-9]|1[0-2])-01$/.test(date)||!Number.isFinite(v)||v<0){invalid++;continue;}
