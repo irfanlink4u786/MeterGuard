@@ -6,3 +6,76 @@
 .identity-page{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(140deg,#103625,#e7f1e9)}.identity-card{background:#fff;border-radius:18px;padding:36px;width:min(450px,100%);display:flex;flex-direction:column;gap:20px;box-shadow:0 15px 50px #123c2430}.identity-card .brand{color:#153e2b;padding:0}.identity-card h1{font:800 26px Manrope;margin:0}.identity-card p{font-size:13px;line-height:1.7;color:#647c6e;margin:0}.identity-card label{font-size:12px;font-weight:800;display:flex;flex-direction:column;gap:8px}.identity-card small{font-size:11px;color:#7c9284;text-align:center}.header-right .photo-btn{max-width:210px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:760px){.header-right .photo-btn{font-size:10px;max-width:110px}}
 
 .evidence-actions{display:flex;flex-wrap:wrap;gap:6px;min-width:190px}
+
+
+/* MeterGuard app-style responsive frontend — presentation only, data logic unchanged */
+:root{--mg-purple:#640b78;--mg-violet:#a414b4;--mg-green:#138b2c}
+body{background:#f7f5fb}
+.sidebar{background:linear-gradient(180deg,#390045 0%,#650b77 55%,#30003b 100%);box-shadow:4px 0 22px #35004418}
+.brand-mark{background:#e8f9df;color:#4b075f}
+.side-label{color:#e4b8e9}
+.nav{color:#f0dff2;border-radius:12px}
+.nav.active,.nav:hover{background:linear-gradient(105deg,#b718c8,#7a108e);color:white;box-shadow:0 5px 16px #25002d3b}
+.side-help{background:#ffffff15;border-color:#ffffff38}.side-help strong,.side-help small{color:#fff}
+.main{background:#f8f7fc}
+header{box-shadow:0 2px 12px #4000540a}
+.content{max-width:1600px}
+.eyebrow{color:#8e18a1}
+.heading h1,.section-head h2{color:#47065a}
+.primary{background:linear-gradient(110deg,#7e0a93,#ba19c9);border-radius:12px}
+.primary:hover{background:#660678}
+.stat,.site-card,.table-wrap{border-color:#e9dff0;box-shadow:0 5px 18px #40005b0b;border-radius:17px}
+.stat-icon{background:#f3e8f8;color:#850c99}
+.stat-icon.red{background:#fff0f2;color:#d04458}
+.stat-icon.blue{background:#eaf4ff;color:#2469b8}
+.stat strong{color:#390050}
+.stat small,.stat span{color:#74647d}
+.ghost{color:#83109a}
+.site-icon{background:#f5e9f9;color:#87099a}
+.site-action{background:#f7edfb;color:#7e0b91}
+.pill.normal{background:#e9f9e9;color:#138a32}
+.photo-btn{background:#f7effa;color:#7b108c;border-color:#e4cde9}
+select:focus,input:focus,textarea:focus{border-color:#a32ab5;box-shadow:0 0 0 3px #9e19b51a}
+.dialog{border-radius:22px 0 0 22px}
+.criterion{background:#f3f9ef;color:#267c34}
+.upload{background:#fcf7fe;border-color:#cfa6db;color:#811196}
+.notice{background:#f2e8f7;color:#6f0a85}
+.auth-side{background:radial-gradient(circle at 70% 40%,#8c159d,#360041 65%)}
+.auth-side .eyebrow{color:#e7b9ed}
+@media(max-width:1100px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+ body{background:#f7f5fb}
+ .sidebar{width:min(310px,86vw);padding:20px 14px;box-shadow:10px 0 40px #21002744}
+ .sidebar.show{overflow-y:auto}
+ .nav{min-height:48px;font-size:14px}
+ header{height:66px;padding:0 14px;background:linear-gradient(105deg,#4a0059,#89099d);color:white}
+ .breadcrumb,.header-right{color:white}
+ .hamburger{color:white;background:#ffffff24}
+ .avatar{background:#ffffff25;color:white}
+ .main{width:100%;overflow-x:clip}
+ .content{padding:16px 12px 88px}
+ .heading{gap:10px;margin-bottom:18px}
+ .heading h1{font-size:clamp(22px,5.5vw,29px);line-height:1.2}
+ .heading p{font-size:12px}
+ .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .stat{padding:14px 12px;min-width:0;border-radius:15px}
+ .stat-icon{width:34px;height:34px;margin-bottom:8px}
+ .stat strong{font-size:clamp(20px,5vw,26px);overflow-wrap:anywhere}
+ .stat span{font-size:11px}
+ .stat small{font-size:10px}
+ .section-head{margin:24px 0 12px}
+ .site-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .site-card{padding:14px 11px;min-width:0}
+ .site-card h3{font-size:17px}
+ .site-meta{flex-wrap:wrap;gap:4px}
+ .filters select{min-width:0}
+ .table-wrap{max-width:100%;overscroll-behavior-x:contain}
+ .dialog{width:100%;padding:18px 14px;border-radius:20px 20px 0 0;max-height:94dvh;height:auto;align-self:end}
+ .overlay{align-items:end}
+ .two-col{grid-template-columns:1fr}
+ .reading-form input,.reading-form select,.reading-form textarea{font-size:16px;min-height:46px}
+ .primary,.photo-btn,.site-action{min-height:44px}
+ .upload{min-height:100px}
+ .evidence-actions{min-width:0}
+}
+@media(max-width:380px){.site-grid{grid-template-columns:1fr}.stat{padding:12px 9px}.stat strong{font-size:20px}}
