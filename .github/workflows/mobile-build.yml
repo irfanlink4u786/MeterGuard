@@ -66,6 +66,11 @@ jobs:
         run: |
           npx cap add ios
           npx cap sync ios
+      - name: Configure iOS camera and photo permissions
+        run: |
+          /usr/libexec/PlistBuddy -c 'Add :NSCameraUsageDescription string MeterGuard uses the camera to capture site meter readings and inspection evidence.' ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c 'Add :NSPhotoLibraryUsageDescription string MeterGuard allows selecting site inspection photos for evidence submission.' ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c 'Add :NSPhotoLibraryAddUsageDescription string MeterGuard may save inspection photos when requested.' ios/App/App/Info.plist
       - name: Build unsigned iOS simulator app
         run: |
           xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
