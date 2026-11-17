@@ -24,7 +24,7 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Resolve dependencies and build React
         run: |
-          npm install --no-audit --no-fund
+          npm ci --no-audit --no-fund
           npm run build
       - name: Generate Android project
         run: |
@@ -60,7 +60,7 @@ jobs:
           node-version: '22'
       - name: Resolve dependencies and build React
         run: |
-          npm install --no-audit --no-fund
+          npm ci --no-audit --no-fund
           npm run build
       - name: Generate iOS project
         run: |
