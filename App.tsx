@@ -6,7 +6,7 @@
 
     import { createClient, type Session } from '@supabase/supabase-js';
 
-    import { ArrowRight, BarChart3, Camera, ChevronDown, ClipboardList, Clock3, Gauge, LogOut, MapPin, Menu, Plus, Search, ShieldCheck, UploadCloud, X, Zap } from 'lucide-react';
+    import { ArrowRight, BarChart3, Camera, ChevronDown, ClipboardList, Clock3, Gauge, LogOut, MapPin, Menu, Search, ShieldCheck, UploadCloud, X, Zap } from 'lucide-react';
 
 
 
