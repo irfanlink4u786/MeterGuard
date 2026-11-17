@@ -480,14 +480,6 @@ function ManagementInsights({mode}:{mode:'cases'|'monthly'|'theft'|'excess'}){
  const savingsGross=savingsReduced.reduce((n,x)=>n+x.aug!-x.sep!,0);
  const savingsNet=savingsComparable.reduce((n,x)=>n+x.aug!-x.sep!,0);
  const savingsGrid=[...new Set(savingsRows.map(x=>x.grid||'Unassigned'))].sort().map(g=>{const group=savingsRows.filter(x=>(x.grid||'Unassigned')===g),comp=group.filter(x=>x.aug!=null&&x.sep!=null),down=comp.filter(x=>x.sep!<x.aug!),up=comp.filter(x=>x.sep!>x.aug!);return {grid:g,total:group.length,compared:comp.length,reduced:down.length,increased:up.length,gross:down.reduce((n,x)=>n+x.aug!-x.sep!,0),net:comp.reduce((n,x)=>n+x.aug!-x.sep!,0)};});
- const theftRows=rows.filter(x=>x.category==='CP theft');
- const theftComparable=theftRows.filter(x=>x.aug!=null&&x.sep!=null);
- const theftReduced=theftComparable.filter(x=>x.sep!<x.aug!);
- const theftIncreased=theftComparable.filter(x=>x.sep!>x.aug!);
- const theftGrossSaved=theftReduced.reduce((sum,x)=>sum+(x.aug!-x.sep!),0);
- const theftIncreaseUnits=theftIncreased.reduce((sum,x)=>sum+(x.sep!-x.aug!),0);
- const theftNetSaved=theftGrossSaved-theftIncreaseUnits;
- const theftGridRows=[...new Set(theftRows.map(x=>x.grid||'Unassigned'))].sort().map(g=>{const group=theftRows.filter(x=>(x.grid||'Unassigned')===g),comp=group.filter(x=>x.aug!=null&&x.sep!=null),down=comp.filter(x=>x.sep!<x.aug!),up=comp.filter(x=>x.sep!>x.aug!);return {grid:g,total:group.length,compared:comp.length,reduced:down.length,increased:up.length,gross:down.reduce((n,x)=>n+x.aug!-x.sep!,0),net:comp.reduce((n,x)=>n+x.aug!-x.sep!,0)};});
  const matched=rows.filter(x=>x.aug!=null&&x.sep!=null);
  const augTotal=matched.reduce((v,x)=>v+(x.aug||0),0),sepTotal=matched.reduce((v,x)=>v+(x.sep||0),0);
  const reduced=matched.filter(x=>(x.sep||0)<(x.aug||0)).length,increased=matched.filter(x=>(x.sep||0)>(x.aug||0)).length;
