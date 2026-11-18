@@ -1,0 +1,111 @@
+name: MeterGuard mobile builds
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feature/capacitor-mobile]
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Android debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Configure preinstalled Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> "$GITHUB_ENV"
+          SDKMANAGER="$(find "$ANDROID_SDK_ROOT/cmdline-tools" -type f -name sdkmanager | head -n 1)"
+          test -n "$SDKMANAGER" || { echo "Android sdkmanager not found"; exit 1; }
+          yes | "$SDKMANAGER" --licenses >/dev/null || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+      - name: Configure and validate public Supabase build settings
+        run: |
+          cp .env.example .env.production
+          grep -Eq '^VITE_SUPABASE_URL=https://[^[:space:]]+' .env.production
+          grep -Eq '^VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_[^[:space:]]+' .env.production
+      - name: Resolve dependencies and build React
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          grep -R -q 'jwgtnlfyaoxtadgtuxpi.supabase.co' dist/assets || { echo 'Supabase URL missing from bundled app' >&2; exit 1; }
+          grep -R -q 'sb_publishable_' dist/assets || { echo 'Supabase publishable key missing from bundled app' >&2; exit 1; }
+      - name: Generate Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+      - name: Compile debug APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MeterGuard-Android-debug-APK
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+      - name: Upload Android source
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MeterGuard-Android-project
+          path: android/
+          if-no-files-found: ignore
+
+  ios:
+    name: iOS simulator build (unsigned)
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Configure and validate public Supabase build settings
+        run: |
+          cp .env.example .env.production
+          grep -Eq '^VITE_SUPABASE_URL=https://[^[:space:]]+' .env.production
+          grep -Eq '^VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_[^[:space:]]+' .env.production
+      - name: Resolve dependencies and build React
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          grep -R -q 'jwgtnlfyaoxtadgtuxpi.supabase.co' dist/assets || { echo 'Supabase URL missing from bundled app' >&2; exit 1; }
+          grep -R -q 'sb_publishable_' dist/assets || { echo 'Supabase publishable key missing from bundled app' >&2; exit 1; }
+      - name: Generate iOS project
+        run: |
+          npx cap add ios
+          npx cap sync ios
+      - name: Configure iOS camera and photo permissions
+        run: |
+          /usr/libexec/PlistBuddy -c 'Add :NSCameraUsageDescription string MeterGuard uses the camera to capture site meter readings and inspection evidence.' ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c 'Add :NSPhotoLibraryUsageDescription string MeterGuard allows selecting site inspection photos for evidence submission.' ios/App/App/Info.plist
+          /usr/libexec/PlistBuddy -c 'Add :NSPhotoLibraryAddUsageDescription string MeterGuard may save inspection photos when requested.' ios/App/App/Info.plist
+      - name: Build unsigned iOS simulator app
+        run: |
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath ios-build CODE_SIGNING_ALLOWED=NO build
+      - name: Upload simulator app
+        uses: actions/upload-artifact@v4
+        with:
+          name: MeterGuard-iOS-simulator-unsigned
+          path: ios-build/Build/Products/Debug-iphonesimulator/App.app/
+          if-no-files-found: error
+      - name: Upload iOS project
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MeterGuard-iOS-project
+          path: ios/
+          if-no-files-found: ignore

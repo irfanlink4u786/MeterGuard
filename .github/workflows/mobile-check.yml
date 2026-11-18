@@ -1,0 +1,19 @@
+name: Mobile readiness checks
+on:
+  push:
+    branches: [feature/capacitor-mobile]
+  pull_request:
+    branches: [main]
+jobs:
+  web-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - name: Validate Capacitor configuration
+        run: node -e "const c=require('./capacitor.config.json'); if(c.webDir!=='dist'||!c.appId) process.exit(1); console.log(c.appId)"
