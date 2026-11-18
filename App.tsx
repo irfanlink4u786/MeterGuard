@@ -7,7 +7,7 @@ import { Capacitor } from '@capacitor/core';
 
     import { createClient, type Session } from '@supabase/supabase-js';
 
-    import { ArrowRight, BarChart3, Camera, ChevronDown, ClipboardList, Clock3, Gauge, LogOut, MapPin, Menu, ShieldCheck, UploadCloud, X, Zap } from 'lucide-react';
+    import { ArrowRight, BarChart3, Camera, ChevronDown, ClipboardList, Gauge, LogOut, MapPin, Menu, ShieldCheck, UploadCloud, X, Zap } from 'lucide-react';
 
 
 
