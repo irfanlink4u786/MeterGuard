@@ -39,9 +39,8 @@ jobs:
         run: |
           npm ci --no-audit --no-fund
           npm run build
-          if grep -R -l 'Connect your Supabase project to start' dist/assets; then
-            echo 'Build contains Supabase setup screen; verify environment configuration' >&2
-          fi
+          grep -R -q 'jwgtnlfyaoxtadgtuxpi.supabase.co' dist/assets || { echo 'Supabase URL missing from bundled app' >&2; exit 1; }
+          grep -R -q 'sb_publishable_' dist/assets || { echo 'Supabase publishable key missing from bundled app' >&2; exit 1; }
       - name: Generate Android project
         run: |
           npx cap add android
@@ -83,9 +82,8 @@ jobs:
         run: |
           npm ci --no-audit --no-fund
           npm run build
-          if grep -R -l 'Connect your Supabase project to start' dist/assets; then
-            echo 'Build contains Supabase setup screen; verify environment configuration' >&2
-          fi
+          grep -R -q 'jwgtnlfyaoxtadgtuxpi.supabase.co' dist/assets || { echo 'Supabase URL missing from bundled app' >&2; exit 1; }
+          grep -R -q 'sb_publishable_' dist/assets || { echo 'Supabase publishable key missing from bundled app' >&2; exit 1; }
       - name: Generate iOS project
         run: |
           npx cap add ios
