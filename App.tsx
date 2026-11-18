@@ -550,12 +550,12 @@ export default function App(){
 
      const selectedSite=sites.find(s=>s.id===selected);const previous=useMemo(()=>readings.filter(r=>r.site_id===selected).sort((a,b)=>new Date(b.reading_at).getTime()-new Date(a.reading_at).getTime())[0],[readings,selected]);const intervalPreview=useMemo(()=>{if(!previous||!peak||!offPeak)return null;const days=(new Date(pstToIso(date)).getTime()-new Date(previous.reading_at).getTime())/86400000;const units=(Number(peak)-previous.peak)+(Number(offPeak)-previous.off_peak);return {days,units,daily:days>0?units/days:null}},[previous,peak,offPeak,date]);
 
-     const all=useMemo(()=>sites.flatMap(s=>analyze(readings.filter(r=>r.site_id===s.id),s).map(x=>({...x,site:s}))),[sites,readings]);
+     
 
 
 
 
-     const selectedLatest=selectedSite?analyze(readings.filter(r=>r.site_id===selectedSite.id),selectedSite)[0]:null;const rows=all.filter(x=>!selected||x.site.id===selected).sort((a,b)=>new Date(b.reading.reading_at).getTime()-new Date(a.reading.reading_at).getTime());
+     const selectedLatest=selectedSite?analyze(readings.filter(r=>r.site_id===selectedSite.id),selectedSite)[0]:null;
 
      async function signIn(e:React.FormEvent){e.preventDefault();setAuthError('');if(!supabase)return;if(email.trim().toLowerCase()!=='meter'){setAuthError('Enter the shared username Meter.');return;}setBusy(true);const {error}=await supabase.auth.signInWithPassword({email:'irfanw3skills@gmail.com',password});setBusy(false);if(error)setAuthError(error.message)}
 
